@@ -175,7 +175,7 @@ namespace AdvShields
             if (shell.ExplosiveCharges.GetFlakExplosionDamage() > 0) ApplyFlakDamage(shell.ExplosiveCharges.GetFlakExplosionDamage(), position);
             if (shell.ExplosiveCharges.GetHighEnergyFragDamage() > 0) ApplyHEATDamage(shell, position);
             if (shell.ExplosiveCharges.GetHighEnergyPenetrationPerAcFromSecondaryWarhead() > 1) ApplySecondaryHEATDamage (shell, position);
-            if (shell.ExplosiveCharges.GetSpallingDamagePotential() > 0) ApplyHESHDamage(shell.ExplosiveCharges.GetSpallingDamagePotential(), position);
+            if (shell.ExplosiveCharges.GetSpallingDamagePotential() > 0) ApplyHESHDamage(shell, position);
             if (shell.ExplosiveCharges.GetEmpDamage() > 0) ApplyEmpDamage(shell.ExplosiveCharges.GetEmpDamage(), position);
             if (shell.ExplosiveCharges.GetIncendiaryFuel() > 0) HandleNonFlamethrowerFireHit(shell.ExplosiveCharges.GetIncendiaryFuel(), shell.ExplosiveCharges.GetIncendiaryIntensity(), shell.ExplosiveCharges.GetIncendiaryOxidizer());
             if (shell.ExplosiveCharges.GetFragCount() > 0) { float angle = shell.ExplosiveCharges.GetFragAngle(); HandleFrag(shell.ExplosiveCharges.GetFragDamage() * FragGenerator.GetAngleDamageMultiplier(angle), shell.ExplosiveCharges.GetFragCount(), angle, position); }
@@ -324,10 +324,13 @@ namespace AdvShields
             AdjustTimeSinceLastHit(realDamage);
         }
 
-        public void ApplyHESHDamage(float damage, Vector3 position)
+        public void ApplyHESHDamage(ShellModel shell, Vector3 position)
         {
-            AdvLogger.LogInfo($"HESH damage potential, before any modifiers, seems to be {damage}", LogOptions._AlertDevInGame);
-            float realDamage = damage;
+            float baseDamage = shell.ExplosiveCharges.GetSpallingDamagePotential();
+            AdvLogger.LogInfo($"HESH damage potential, before any modifiers, seems to be {baseDamage}", LogOptions._AlertDevInGame);
+            float realDamage = baseDamage / (stats.ArmourClass * 10);
+            realDamage *= 0.1f;
+            AdvLogger.LogInfo($"HESH damage potential, AFTER all modifiers, was {realDamage}. Does that look reasonable?", LogOptions._AlertDevInGame);
             realDamage *= GetCardMult("Thump");
             CurrentDamageSustained += realDamage;
             float maxEnergy = stats.MaxHealth;
