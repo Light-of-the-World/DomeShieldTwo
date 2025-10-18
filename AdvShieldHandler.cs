@@ -173,7 +173,8 @@ namespace AdvShields
             }
             if (shell.ExplosiveCharges.GetExplosionDamage() > 0) ApplyHEDamage(shell.ExplosiveCharges.GetExplosionDamage(), position);
             if (shell.ExplosiveCharges.GetFlakExplosionDamage() > 0) ApplyFlakDamage(shell.ExplosiveCharges.GetFlakExplosionDamage(), position);
-            if (shell.ExplosiveCharges.GetHighEnergyFragDamage() > 0 || shell.ExplosiveCharges.GetHighEnergyFragDamageFromSecondaryWarhead() > 0) ApplyHEATDamage(shell, position);
+            if (shell.ExplosiveCharges.GetHighEnergyFragDamage() > 0) ApplyHEATDamage(shell, position);
+            if (shell.ExplosiveCharges.GetHighEnergyPenetrationPerAcFromSecondaryWarhead() > 1) ApplySecondaryHEATDamage (shell, position);
             if (shell.ExplosiveCharges.GetSpallingDamagePotential() > 0) ApplyHESHDamage(shell.ExplosiveCharges.GetSpallingDamagePotential(), position);
             if (shell.ExplosiveCharges.GetEmpDamage() > 0) ApplyEmpDamage(shell.ExplosiveCharges.GetEmpDamage(), position);
             if (shell.ExplosiveCharges.GetIncendiaryFuel() > 0) HandleNonFlamethrowerFireHit(shell.ExplosiveCharges.GetIncendiaryFuel(), shell.ExplosiveCharges.GetIncendiaryIntensity(), shell.ExplosiveCharges.GetIncendiaryOxidizer());
@@ -279,14 +280,37 @@ namespace AdvShields
 
         public void ApplyHEATDamage(ShellModel shell, Vector3 position)
         {
-            float initialDamage = shell.ExplosiveCharges.GetHighEnergyFragDamage() + shell.ExplosiveCharges.GetHighEnergyFragDamageFromSecondaryWarhead();
+            float initialDamage = shell.ExplosiveCharges.GetHighEnergyFragDamage();
             float initialAP = shell.ExplosiveCharges.GetHighEnergyPenetrationPerAc();
-            if (shell.ExplosiveCharges.GetHighEnergyPenetrationPerAcFromSecondaryWarhead() > initialAP) initialAP = shell.ExplosiveCharges.GetHighEnergyPenetrationPerAcFromSecondaryWarhead();
-            int initialCount = shell.ExplosiveCharges.GetHighEnergyParticulateCount() + shell.ExplosiveCharges.GetHighEnergyParticulateCountFromSecondaryWarhead();
+            int initialCount = shell.ExplosiveCharges.GetHighEnergyParticulateCount();
+            initialDamage /= initialCount;
             float realDamage = CalculateActualFragDamage(initialDamage, initialCount, 180 - (initialAP * 3));
             realDamage *= 0.1f;
             realDamage *= GetCardMult("Pierce");
             AdvLogger.LogInfo($"HEAT damage after all mults: {realDamage}", LogOptions._AlertDevInGame);
+            CurrentDamageSustained += realDamage;
+            float maxEnergy = stats.MaxHealth;
+            if (CurrentDamageSustained >= maxEnergy)
+            {
+                //CurrentDamageSustained = maxEnergy;
+                controller.SettingsData.IsShieldOn.Us = enumShieldDomeState.Off;
+                controller.ShieldDome.gameObject.GetComponent<MeshRenderer>().enabled = false;
+                OverkillDamage = CurrentDamageSustained - maxEnergy;
+            }
+            if (!this.controller.OnPlayerTeam) DamageHelp.DisplayDamageMarker(Rounding.FloatToInt(realDamage), DamageType.Kinetic, GAME_STATE.MyTeam);
+            AdjustTimeSinceLastHit(realDamage);
+        }
+        
+        public void ApplySecondaryHEATDamage(ShellModel shell, Vector3 position)
+        {
+            float initialDamage = shell.ExplosiveCharges.GetHighEnergyFragDamageFromSecondaryWarhead();
+            float initialAP = shell.ExplosiveCharges.GetHighEnergyPenetrationPerAcFromSecondaryWarhead();
+            int initialCount = shell.ExplosiveCharges.GetHighEnergyParticulateCountFromSecondaryWarhead();
+            initialDamage /= initialCount;
+            float realDamage = CalculateActualFragDamage(initialDamage, initialCount, 180 - (initialAP * 3));
+            realDamage *= 0.1f;
+            realDamage *= GetCardMult("Pierce");
+            AdvLogger.LogInfo($"Secondary HEAT damage after all mults: {realDamage}", LogOptions._AlertDevInGame);
             CurrentDamageSustained += realDamage;
             float maxEnergy = stats.MaxHealth;
             if (CurrentDamageSustained >= maxEnergy)
@@ -304,6 +328,7 @@ namespace AdvShields
         {
             AdvLogger.LogInfo($"HESH damage potential, before any modifiers, seems to be {damage}", LogOptions._AlertDevInGame);
             float realDamage = damage;
+            realDamage *= GetCardMult("Thump");
             CurrentDamageSustained += realDamage;
             float maxEnergy = stats.MaxHealth;
             if (CurrentDamageSustained >= maxEnergy)

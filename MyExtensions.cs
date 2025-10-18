@@ -501,6 +501,23 @@ namespace AdvShields
                         ShellModel model = Traverse.Create(__instance).Field("_shellModel").GetValue<ShellModel>();
                         item.ShieldHandler.HandleGenericAPSHit(model, hitPosition, __instance.Gunner);
                         if (model.KineticDamage.GetKineticDamage() > item.ShieldStats.MaxHealth) return true;
+                        /*
+                        float num = SharedWeaponConstants.HealthDamageFactor(__instance.Health / model.Health);
+                        if (model.ExplosiveCharges.GetHighEnergyPenetrationPerAc() > 1)
+                        {
+                            AdvLogger.LogInfo("Generating blast", LogOptions._AlertDevInGame);
+                            IAllConstructBlock C = item.ParentConstruct;
+                            bool blast = HighEnergyPenetrator.HighEnergyBlast(__instance.SafePosition, __instance.SafeForward, __instance.Gunner, C, model.ExplosiveCharges.GetHighEnergyPenetrationPerAc(), model.ExplosiveCharges.GetHighEnergyParticulateCount(), model.ExplosiveCharges.GetHighEnergyFragDamage() * num / (float)model.ExplosiveCharges.GetHighEnergyParticulateCount(), __instance.UniqueId);
+                            //Really just copying how it functions in FTD.
+                        }
+                        if (model.ExplosiveCharges.GetSpallingDamagePotential() > 1)
+                        {
+                            AdvLogger.LogInfo("Generating spall", LogOptions._AlertDevInGame);
+                            IAllConstructBlock C = item.ParentConstruct;
+                            bool spall = SpallingGenerator.GenerateSpalling(__instance.SafePosition, __instance.SafeForward, __instance.UniqueId, __instance.Gunner, C, model.ExplosiveCharges.GetSpallingDamagePotential() * num);
+                            //Really just copying how it functions in FTD.
+                        }
+                        */
                         if (model.ExplosiveCharges.GetExplosionDamage() > 0)
                         {
                             GameEvents.Callbacks.DispatchToMainThread(delegate
