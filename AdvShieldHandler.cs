@@ -308,9 +308,9 @@ namespace AdvShields
             int initialCount = shell.ExplosiveCharges.GetHighEnergyParticulateCountFromSecondaryWarhead();
             initialDamage /= initialCount;
             float realDamage = CalculateActualFragDamage(initialDamage, initialCount, 180 - (initialAP * 3));
-            realDamage *= 0.1f;
+            realDamage *= 0.07f;
             realDamage *= GetCardMult("Pierce");
-            AdvLogger.LogInfo($"Secondary HEAT damage after all mults: {realDamage}", LogOptions._AlertDevInGame);
+            //AdvLogger.LogInfo($"Secondary HEAT damage after all mults: {realDamage}", LogOptions._AlertDevInGame);
             CurrentDamageSustained += realDamage;
             float maxEnergy = stats.MaxHealth;
             if (CurrentDamageSustained >= maxEnergy)
@@ -327,10 +327,10 @@ namespace AdvShields
         public void ApplyHESHDamage(ShellModel shell, Vector3 position)
         {
             float baseDamage = shell.ExplosiveCharges.GetSpallingDamagePotential();
-            AdvLogger.LogInfo($"HESH damage potential, before any modifiers, seems to be {baseDamage}", LogOptions._AlertDevInGame);
-            float realDamage = baseDamage / (stats.ArmourClass * 10);
-            realDamage *= 0.1f;
-            AdvLogger.LogInfo($"HESH damage potential, AFTER all modifiers, was {realDamage}. Does that look reasonable?", LogOptions._AlertDevInGame);
+            //AdvLogger.LogInfo($"HESH damage potential, before any modifiers, seems to be {baseDamage}", LogOptions._AlertDevInGame);
+            float realDamage = baseDamage / (stats.ArmourClass * 5);
+            //realDamage *= 0.1f;
+            //AdvLogger.LogInfo($"HESH damage potential, AFTER all modifiers, was {realDamage}. Does that look reasonable?", LogOptions._AlertDevInGame);
             realDamage *= GetCardMult("Thump");
             CurrentDamageSustained += realDamage;
             float maxEnergy = stats.MaxHealth;
