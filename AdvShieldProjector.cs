@@ -516,7 +516,7 @@ namespace AdvShields
                 {
                     //text_1 = $"Shield is recharging, {currentHealth / ShieldStats.MaxHealth * 100:F1} % complete.";
                     //Trying new system
-                    text_1 = $"Shield is recharging, {ShieldHandler.CurrentDamageSustained / (ShieldStats.PassiveRegen * 10):F1} seconds until complete.";
+                    text_1 = $"Shield is recharging, <<{ShieldHandler.CurrentDamageSustained / (ShieldStats.PassiveRegen * 10):F1}>> seconds until complete.";
                     progress = Mathf.Clamp01(Mathf.SmoothStep(0, 1, secondsSinceLastHit / ShieldStats.ActualWaitTime));
                 }
                 else
