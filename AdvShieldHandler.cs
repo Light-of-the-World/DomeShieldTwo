@@ -173,6 +173,8 @@ namespace AdvShields
             }
             if (shell.ExplosiveCharges.GetExplosionDamage() > 0) ApplyHEDamage(shell.ExplosiveCharges.GetExplosionDamage(), position);
             if (shell.ExplosiveCharges.GetFlakExplosionDamage() > 0) ApplyFlakDamage(shell.ExplosiveCharges.GetFlakExplosionDamage(), position);
+            if (shell.ExplosiveCharges.GetHighEnergyFragDamage() > 0 || shell.ExplosiveCharges.GetHighEnergyFragDamageFromSecondaryWarhead() > 0) ApplyHEATDamage(shell, position);
+            if (shell.ExplosiveCharges.GetSpallingDamagePotential() > 0) ApplyHESHDamage(shell.ExplosiveCharges.GetSpallingDamagePotential(), position);
             if (shell.ExplosiveCharges.GetEmpDamage() > 0) ApplyEmpDamage(shell.ExplosiveCharges.GetEmpDamage(), position);
             if (shell.ExplosiveCharges.GetIncendiaryFuel() > 0) HandleNonFlamethrowerFireHit(shell.ExplosiveCharges.GetIncendiaryFuel(), shell.ExplosiveCharges.GetIncendiaryIntensity(), shell.ExplosiveCharges.GetIncendiaryOxidizer());
             if (shell.ExplosiveCharges.GetFragCount() > 0) { float angle = shell.ExplosiveCharges.GetFragAngle(); HandleFrag(shell.ExplosiveCharges.GetFragDamage() * FragGenerator.GetAngleDamageMultiplier(angle), shell.ExplosiveCharges.GetFragCount(), angle, position); }
@@ -272,6 +274,46 @@ namespace AdvShields
                 OverkillDamage = CurrentDamageSustained - maxEnergy;
             }
             if (!this.controller.OnPlayerTeam) { if (!isParticle) DamageHelp.DisplayDamageMarker(Rounding.FloatToInt(realDamage), DamageType.Kinetic, GAME_STATE.MyTeam); }
+            AdjustTimeSinceLastHit(realDamage);
+        }
+
+        public void ApplyHEATDamage(ShellModel shell, Vector3 position)
+        {
+            float initialDamage = shell.ExplosiveCharges.GetHighEnergyFragDamage() + shell.ExplosiveCharges.GetHighEnergyFragDamageFromSecondaryWarhead();
+            float initialAP = shell.ExplosiveCharges.GetHighEnergyPenetrationPerAc();
+            if (shell.ExplosiveCharges.GetHighEnergyPenetrationPerAcFromSecondaryWarhead() > initialAP) initialAP = shell.ExplosiveCharges.GetHighEnergyPenetrationPerAcFromSecondaryWarhead();
+            int initialCount = shell.ExplosiveCharges.GetHighEnergyParticulateCount() + shell.ExplosiveCharges.GetHighEnergyParticulateCountFromSecondaryWarhead();
+            float realDamage = CalculateActualFragDamage(initialDamage, initialCount, 180 - (initialAP * 3));
+            realDamage *= 0.1f;
+            realDamage *= GetCardMult("Pierce");
+            AdvLogger.LogInfo($"HEAT damage after all mults: {realDamage}", LogOptions._AlertDevInGame);
+            CurrentDamageSustained += realDamage;
+            float maxEnergy = stats.MaxHealth;
+            if (CurrentDamageSustained >= maxEnergy)
+            {
+                //CurrentDamageSustained = maxEnergy;
+                controller.SettingsData.IsShieldOn.Us = enumShieldDomeState.Off;
+                controller.ShieldDome.gameObject.GetComponent<MeshRenderer>().enabled = false;
+                OverkillDamage = CurrentDamageSustained - maxEnergy;
+            }
+            if (!this.controller.OnPlayerTeam) DamageHelp.DisplayDamageMarker(Rounding.FloatToInt(realDamage), DamageType.Kinetic, GAME_STATE.MyTeam);
+            AdjustTimeSinceLastHit(realDamage);
+        }
+
+        public void ApplyHESHDamage(float damage, Vector3 position)
+        {
+            AdvLogger.LogInfo($"HESH damage potential, before any modifiers, seems to be {damage}", LogOptions._AlertDevInGame);
+            float realDamage = damage;
+            CurrentDamageSustained += realDamage;
+            float maxEnergy = stats.MaxHealth;
+            if (CurrentDamageSustained >= maxEnergy)
+            {
+                //CurrentDamageSustained = maxEnergy;
+                controller.SettingsData.IsShieldOn.Us = enumShieldDomeState.Off;
+                controller.ShieldDome.gameObject.GetComponent<MeshRenderer>().enabled = false;
+                OverkillDamage = CurrentDamageSustained - maxEnergy;
+            }
+            if (!this.controller.OnPlayerTeam) DamageHelp.DisplayDamageMarker(Rounding.FloatToInt(realDamage), DamageType.Crash, GAME_STATE.MyTeam);
             AdjustTimeSinceLastHit(realDamage);
         }
 
