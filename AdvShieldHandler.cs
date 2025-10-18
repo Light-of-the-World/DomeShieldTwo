@@ -285,7 +285,8 @@ namespace AdvShields
             int initialCount = shell.ExplosiveCharges.GetHighEnergyParticulateCount();
             initialDamage /= initialCount;
             float realDamage = CalculateActualFragDamage(initialDamage, initialCount, 180 - (initialAP * 3));
-            realDamage *= UnityEngine.Random.Range(0.01f, 0.2f);
+            realDamage *= UnityEngine.Random.Range(0.01f, 0.15f);
+            realDamage *= 0.75f; //Additional reduction
             realDamage *= GetCardMult("Pierce");
             //AdvLogger.LogInfo($"HEAT damage after all mults: {realDamage}", LogOptions._AlertDevInGame);
             CurrentDamageSustained += realDamage;
@@ -308,7 +309,8 @@ namespace AdvShields
             int initialCount = shell.ExplosiveCharges.GetHighEnergyParticulateCountFromSecondaryWarhead();
             initialDamage /= initialCount;
             float realDamage = CalculateActualFragDamage(initialDamage, initialCount, 180 - (initialAP * 3));
-            realDamage *= UnityEngine.Random.Range(0.01f, 0.2f);
+            realDamage *= UnityEngine.Random.Range(0.01f, 0.15f);
+            realDamage *= 0.75f; //Additional reduction
             realDamage *= GetCardMult("Pierce");
             //AdvLogger.LogInfo($"Secondary HEAT damage after all mults: {realDamage}", LogOptions._AlertDevInGame);
             CurrentDamageSustained += realDamage;
@@ -329,7 +331,7 @@ namespace AdvShields
             float baseDamage = shell.ExplosiveCharges.GetSpallingDamagePotential();
             //AdvLogger.LogInfo($"HESH damage potential, before any modifiers, seems to be {baseDamage}", LogOptions._AlertDevInGame);
             float realDamage = baseDamage / (stats.ArmourClass);
-            realDamage *= UnityEngine.Random.Range(0.2f, 1f);
+            realDamage *= UnityEngine.Random.Range(0.25f, 1.15f);
             //AdvLogger.LogInfo($"HESH damage potential, AFTER all modifiers, was {realDamage}. Does that look reasonable?", LogOptions._AlertDevInGame);
             realDamage *= GetCardMult("Thump");
             CurrentDamageSustained += realDamage;
