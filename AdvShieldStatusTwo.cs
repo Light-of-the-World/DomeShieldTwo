@@ -150,12 +150,12 @@ namespace DomeShieldTwo
 
             #region Hardener Efficiceny Formula
             //Calculates the hardender efficiency based on the current Max Energy.
-            const float R = 1000000; //The Energy value where the formula will output (0.5 + POSTMOD)
-            const float S = 300000; //How aggressive the EARLY parts of the shield are, higher value means a SLOWER HIGH ENERGY falloff, but a FASTER LOW ENERGY falloff. 
+            const float R = 500000; //The Energy value where the formula will output (0.5 + POSTMOD)
+            const float S = 250000; //How aggressive the EARLY parts of the shield are, higher value means a SLOWER HIGH ENERGY falloff, but a FASTER LOW ENERGY falloff. 
 
-            const float POSTMMOD = 0.1f;//The post formula just plain outright buff, this is to give a range of shield values above 1.
-            const float MINEFFICIENCY = 0.1f;//The min effectiveness of the hardneners on big shields
-            const float MAXEFFICIENCY = 1f; //The max effectivness of hardeners on small shields
+            const float POSTMMOD = 0.05f;//The post formula just plain outright buff, this is to give a range of shield values above 1.
+            const float MINEFFICIENCY = 0.09f;//The min effectiveness of the hardneners on big shields
+            const float MAXEFFICIENCY = 0.95f; //The max effectivness of hardeners on small shields
 
             float hardenerEfficiency = Mathf.Clamp((1f / (1f + Mathf.Pow((MathF.E), (CurrentMaxEnergy - R) /S))) + POSTMMOD, MINEFFICIENCY, MAXEFFICIENCY);
 
@@ -163,9 +163,9 @@ namespace DomeShieldTwo
 
             #region Hardener EPP Reduction Formula
             //Calculates the reduction in EPP cost for the set AC value based on number of hardeners
-            const float K = 1f; //The steepness of the slope of below formula. Higher number makes a MUCH faster drop before curving
-            const float C = 0.3f; //The Flatness of the curve, smaller number makes curve flatter
-            const float MAXREDUCTION = 0; //The smallest value that the hardnerModifier can be, 0 means the shield with enough hardners CAN make AC free.
+            const float K = 1f; //The steepness of the slope of below formula. Higher number makes a MUCH faster drop before curving.
+            const float C = 0.2f; //The Flatness of the curve, smaller number makes curve flatter. //Smaller number = harsher curve. Lower this number to make hardenerers LESS effective.
+            const float MAXREDUCTION = 0.2f; //The smallest value that the hardnerModifier can be, 0 means the shield with enough hardners CAN make AC free.
 
             float efficiency_Term = (1f + hardenerEfficiency) / 2f; //Tje part that takes into account efficiency
             float log_Term = -C * Mathf.Log(1f + K * Hardeners); //The part that takes into account hardeners
