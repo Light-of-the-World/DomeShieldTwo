@@ -92,28 +92,28 @@ namespace DomeShieldTwo.newshieldblocksystem
         }
         public float GetPowerMultiplier()
         {
-            float multiplier = ((1 * GetOverchargerPowerMultiplier()) * GetRegulatorPowerMultiplier());
+            float multiplier = ((1 * GetOverchargerPowerMultiplier()) * GetRectifierPowerMultiplier());
             return multiplier;
         }
 
         private float GetOverchargerPowerMultiplier()
         {
             float baseIncrease = (float)OverchargersOnLink * 1.1f;
-            float penalty = ((baseIncrease * 1.83f) - OverchargersOnLink) - 1;
-            float adjustedIncrease = baseIncrease - penalty;
-            if (OverchargersOnLink == 0) adjustedIncrease = 1;
-            if (OverchargersOnLink == 1) adjustedIncrease = 1.1f;
-            return adjustedIncrease;
-            //return 1f + ((overchargers * 1.1f) * (0.1f - ((float)Math.Pow(100 / overchargers, 0.1))));
-            //What on earth was I doing with this formula LMAO
+            float adjustedIncrease1 = ((baseIncrease * 1.83f) - OverchargersOnLink) - 1; //tf is this?
+            float adjustedIncrease2 = baseIncrease - (OverchargersOnLink * 0.98f);
+            adjustedIncrease2 = (OverchargersOnLink == 1) ? 1.1f : adjustedIncrease2;
+            float penalty = Mathf.Clamp((OverchargersOnLink + 1 / RectifiersOnLink + 1) - 0.1f, 0, 1);
+            float finalIncrease = 1f + (1f * (adjustedIncrease2 * penalty));
+            return finalIncrease;
         }
-        private float GetRegulatorPowerMultiplier()
+        private float GetRectifierPowerMultiplier()
         {
-            float baseReduction = (RectifiersOnLink * 0.05f);
-            float adjustedReduction = baseReduction - (RectifiersOnLink * 0.006f);
-            float finalReduction = 1f - adjustedReduction;
-            if (RectifiersOnLink == 1) finalReduction = 0.95f;
-            if (RectifiersOnLink == 0) finalReduction = 1f;
+            float baseReduction = (RectifiersOnLink * 0.04f);
+            float adjustedReduction = baseReduction - (RectifiersOnLink * 0.005f); //Each new overcharger slowly loses efficiency.
+            adjustedReduction = (RectifiersOnLink == 1) ? 0.04f : adjustedReduction; //If only 1 overcharger, we don't want it being affected by scaling
+            float penalty = Mathf.Clamp((RectifiersOnLink + 1 / OverchargersOnLink + 1) - 0.1f, 0.1f, 1f); //Ratio of rectifiers and overcharges, with /0 protection, and a built in 10% penalty that is removed in a favorable ratio.
+            float finalReduction = 1f - (1f * (adjustedReduction * penalty)); //Actual multiplier returned. Should be between 0-1.
+            finalReduction = (finalReduction < 0.2f) ? 0.2f : finalReduction; //TEMPORARY hard cap of 0.2 while we test formulas. This shouldn't be needed by release.
             return finalReduction;
         }
         protected override void AppendToolTip(ProTip tip)
