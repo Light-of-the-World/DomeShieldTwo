@@ -93,6 +93,7 @@ namespace DomeShieldTwo.newshieldblocksystem
         public float GetPowerMultiplier()
         {
             float multiplier = ((1 * GetOverchargerPowerMultiplier()) * GetRectifierPowerMultiplier());
+            if (OverchargersOnLink == 0 && RectifiersOnLink == 0) multiplier = 1.0f;
             return multiplier;
         }
 
@@ -100,20 +101,26 @@ namespace DomeShieldTwo.newshieldblocksystem
         {
             float baseIncrease = (float)OverchargersOnLink * 1.1f;
             float adjustedIncrease1 = ((baseIncrease * 1.83f) - OverchargersOnLink) - 1; //tf is this?
-            float adjustedIncrease2 = baseIncrease - (OverchargersOnLink * 0.98f);
-            adjustedIncrease2 = (OverchargersOnLink == 1) ? 1.1f : adjustedIncrease2;
-            float penalty = Mathf.Clamp((OverchargersOnLink + 1 / RectifiersOnLink + 1) - 0.1f, 0, 1);
-            float finalIncrease = 1f + (1f * (adjustedIncrease2 * penalty));
+            float adjustedIncrease2 = baseIncrease - (Mathf.Pow(OverchargersOnLink, 1.01f) * 0.98f);
+            adjustedIncrease2 = (OverchargersOnLink == 1) ? 0.1f : adjustedIncrease2;
+            OverchargerPenalty = Math.Clamp(((OverchargersOnLink + 1f) / (RectifiersOnLink + 1f)) - 0.1f, 0f, 1f); //THE EXPLICIT FLOAT CAST IS NEEDED!
+            showOverchargerNotif = OverchargerPenalty < 0.99f;
+            float finalIncrease = 1f + (1f * (adjustedIncrease2 * OverchargerPenalty));
             return finalIncrease;
         }
         private float GetRectifierPowerMultiplier()
         {
             float baseReduction = (RectifiersOnLink * 0.04f);
-            float adjustedReduction = baseReduction - (RectifiersOnLink * 0.005f); //Each new overcharger slowly loses efficiency.
-            adjustedReduction = (RectifiersOnLink == 1) ? 0.04f : adjustedReduction; //If only 1 overcharger, we don't want it being affected by scaling
-            float penalty = Mathf.Clamp((RectifiersOnLink + 1 / OverchargersOnLink + 1) - 0.1f, 0.1f, 1f); //Ratio of rectifiers and overcharges, with /0 protection, and a built in 10% penalty that is removed in a favorable ratio.
-            float finalReduction = 1f - (1f * (adjustedReduction * penalty)); //Actual multiplier returned. Should be between 0-1.
+            float adjustedReduction = baseReduction - (Mathf.Pow(RectifiersOnLink, 1.01f) * 0.005f); //Each new rectifier slowly loses efficiency.
+            adjustedReduction = (RectifiersOnLink == 1) ? 0.04f : adjustedReduction; //If only 1 rectifier, we don't want it being affected by scaling
+            RectifierPenalty = Math.Clamp(((RectifiersOnLink + 1f) / (OverchargersOnLink + 1f)) - 0.1f, 0f, 1f); //Ratio of rectifiers and overcharges, with /0 protection, and a built in 10% penalty that is removed in a favorable ratio.
+            /*
+            float tempRectPenalty = ((float)RectifiersOnLink + 1) / ((float)OverchargersOnLink + 1) - 0.1f;
+            RectifierPenalty = tempRectPenalty;*/
+
+            float finalReduction = 1f - (1f * (adjustedReduction * RectifierPenalty)); //Actual multiplier returned. Should be between 0-1.
             finalReduction = (finalReduction < 0.2f) ? 0.2f : finalReduction; //TEMPORARY hard cap of 0.2 while we test formulas. This shouldn't be needed by release.
+            showRectifierNotif = RectifierPenalty < 0.99f;
             return finalReduction;
         }
         protected override void AppendToolTip(ProTip tip)
@@ -243,5 +250,9 @@ namespace DomeShieldTwo.newshieldblocksystem
         public int OverchargersOnLink;
         public int RectifiersOnLink;
         public float ActualEnergy;
+        public bool showOverchargerNotif;
+        public bool showRectifierNotif;
+        public float OverchargerPenalty;
+        public float RectifierPenalty;
     }
 }

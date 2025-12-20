@@ -81,6 +81,7 @@ namespace DomeShieldTwo.newshieldblocksystem
         public float GetPowerMultiplier()
         {
             float multiplier = ((1 * GetOverchargerPowerMultiplier()) * GetRectifierPowerMultiplier());
+            if (Rectifiers == 0 && Overchargers == 0) multiplier = 1;
             return multiplier;
         }
 
@@ -88,19 +89,19 @@ namespace DomeShieldTwo.newshieldblocksystem
         {
             float baseIncrease = (float)Overchargers * 1.1f;
             float adjustedIncrease1 = ((baseIncrease * 1.83f) - Overchargers) - 1; //tf is this?
-            float adjustedIncrease2 = baseIncrease - (Overchargers * 0.98f);
-            adjustedIncrease2 = (Overchargers == 1) ? 1.1f : adjustedIncrease2;
-            float penalty = Mathf.Clamp((Overchargers + 1 / Rectifiers + 1) - 0.1f, 0, 1);
-            float finalIncrease = 1f + (1f * (adjustedIncrease2 * penalty));
+            float adjustedIncrease2 = baseIncrease - (Mathf.Pow(Overchargers, 1.01f) * 0.98f);
+            adjustedIncrease2 = (Overchargers == 1) ? 0.1f : adjustedIncrease2;
+            float OverchargerPenalty = Mathf.Clamp(((Overchargers + 1) / (Rectifiers + 1)) - 0.1f, 0, 1);
+            float finalIncrease = 1f + (1f * (adjustedIncrease2 * OverchargerPenalty));
             return finalIncrease;
         }
         private float GetRectifierPowerMultiplier()
         {
             float baseReduction = (Rectifiers * 0.04f);
-            float adjustedReduction = baseReduction - (Rectifiers * 0.005f); //Each new overcharger slowly loses efficiency.
-            adjustedReduction = (Rectifiers == 1) ? 0.04f : adjustedReduction; //If only 1 overcharger, we don't want it being affected by scaling
-            float penalty = Mathf.Clamp((Rectifiers + 1 / Overchargers + 1) - 0.1f, 0.1f, 1f); //Ratio of rectifiers and overcharges, with /0 protection, and a built in 10% penalty that is removed in a favorable ratio.
-            float finalReduction = 1f - (1f * (adjustedReduction * penalty)); //Actual multiplier returned. Should be between 0-1.
+            float adjustedReduction = baseReduction - (Mathf.Pow(Rectifiers, 1.01f) * 0.005f); //Each new rectifier slowly loses efficiency.
+            adjustedReduction = (Rectifiers == 1) ? 0.04f : adjustedReduction; //If only 1 rectifier, we don't want it being affected by scaling
+            float RectifierPenalty = Mathf.Clamp(((Rectifiers + 1) / (Overchargers + 1)) - 0.1f, 0.1f, 1f); //Ratio of rectifiers and overcharges, with /0 protection, and a built in 10% penalty that is removed in a favorable ratio.
+            float finalReduction = 1f - (1f * (adjustedReduction * RectifierPenalty)); //Actual multiplier returned. Should be between 0-1.
             finalReduction = (finalReduction < 0.2f) ? 0.2f : finalReduction; //TEMPORARY hard cap of 0.2 while we test formulas. This shouldn't be needed by release.
             return finalReduction;
         }
