@@ -241,6 +241,7 @@ namespace DomeShieldTwo
                 float localHardeners = 0;
                 float localTransformers = 0;
                 float localOverchargers = 0;
+                float localRectifiers = 0;
                 float localEnergy = 0;
                 float localBlocks = 0;
                 float localSpoofers = 0;
@@ -249,24 +250,26 @@ namespace DomeShieldTwo
                     localHardeners += beamInfo.Hardeners;
                     localTransformers += beamInfo.Transformers;
                     localOverchargers += beamInfo.Overchargers;
+                    localRectifiers += beamInfo.Rectifiers;
                     localEnergy += beamInfo.MaxEnergy;
                     localBlocks += beamInfo.TotalBlocks;
                     localSpoofers += beamInfo.Spoofers;
                     TotalBlocks += beamInfo.TotalBlocks;
                 }
                 float baseOverchargerIncrease = (localOverchargers * 1.1f);
-                float penalty = ((baseOverchargerIncrease * 1.83f) - localOverchargers) - 1;
-                float adjustedOverchargerIncrease = baseOverchargerIncrease - penalty;
-                if (localOverchargers == 1) adjustedOverchargerIncrease = 1.1f;
+                float adjustedIncrease1 = ((baseOverchargerIncrease * 1.83f) - localOverchargers) - 1; //tf is this?
+                float adjustedIncrease2 = baseOverchargerIncrease - (Mathf.Pow(localOverchargers, 1.01f) * 0.98f);
+                adjustedIncrease2 = (localOverchargers == 1) ? 0.1f : adjustedIncrease2;
+                float finalIncrease = 1f + (1f * (adjustedIncrease2 * dSCoupler.OverchargerPenalty));
                 if (localOverchargers != 0)
                 {
-                    effectiveHardeners += (localHardeners * adjustedOverchargerIncrease);
-                    effectiveTransformers += (localTransformers * adjustedOverchargerIncrease);
-                    realEnergy += (localEnergy * adjustedOverchargerIncrease);
-                    effectiveSpoofers += (localSpoofers * adjustedOverchargerIncrease);
-                    if ((localBlocks - ((localSpoofers * adjustedOverchargerIncrease) * 5) > 0))
+                    effectiveHardeners += (localHardeners * finalIncrease);
+                    effectiveTransformers += (localTransformers * finalIncrease);
+                    realEnergy += (localEnergy * finalIncrease);
+                    effectiveSpoofers += (localSpoofers * finalIncrease);
+                    if ((localBlocks - ((localSpoofers * finalIncrease) * 5) > 0))
                     {
-                        effectiveBlocks += (localBlocks - ((localSpoofers * adjustedOverchargerIncrease) * 5));
+                        effectiveBlocks += (localBlocks - ((localSpoofers * finalIncrease) * 5));
                     }
                     //No reason to add 0, we can just ignore otherwise.
                 }
