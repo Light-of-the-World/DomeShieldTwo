@@ -19,6 +19,7 @@ using BrilliantSkies.Ui.Layouts.DropDowns;
 using BrilliantSkies.Ui.Tips;
 using UnityEngine;
 using AdvShields.Models;
+using DomeShieldTwo.newshieldblocksystem;
 
 namespace AdvShields.UI
 {
@@ -113,11 +114,16 @@ namespace AdvShields.UI
             standardSegment1.AddInterpretter(SubjectiveDisplay<AdvShieldProjector>.Quick(_focus, M.m<AdvShieldProjector>(I =>
             {
                 bool hasSpoofer = I.ShieldStats.Spoofers > 0;
-                if (hasSpoofer) return string.Format("You have {0} spoofers, for a total power increase of {1} (spoofers * (300 * power mult)).", I.ShieldStats.Spoofers, (I.ShieldStats.Spoofers * (300 * I.TotalCapMult())));
+                if (hasSpoofer) return string.Format("You have {0} spoofers, for a total power increase of {1} (spoofers * (125 * power mult)).", I.ShieldStats.Spoofers, (I.ShieldStats.Spoofers * (125 * I.TotalCapMult())));
                 else return "You do not have any spoofers attached, so there is no power draw from that";
             })));
             standardSegment1.AddInterpretter(SubjectiveDisplay<AdvShieldProjector>.Quick(_focus, M.m<AdvShieldProjector>(I => string.Format("The shield is benefitting from a <color=green>{0}</color>% reduction in power use due to the circular shape of the shield.", (I.ShieldCircleness * 100) - 100))));
-            standardSegment1.AddInterpretter(SubjectiveDisplay<AdvShieldProjector>.Quick(_focus, M.m<AdvShieldProjector>(I => string.Format("This comes to a final power draw of <color=purple>{0}</color> while resting. During passive regen, this is multiplied by 1.2 to become {1}, and during active regen it's multiplied by 2 to become {2}. Be sure your engine can handle it!", (I.GetPowerUsed() + I.ShieldSizePower / I.ShieldCircleness), ((I.GetPowerUsed() + I.ShieldSizePower / I.ShieldCircleness)) * 1.2f, ((I.GetPowerUsed() + I.ShieldSizePower / I.ShieldCircleness) * 2)))));
+            standardSegment1.AddInterpretter(SubjectiveDisplay<AdvShieldProjector>.Quick(_focus, M.m<AdvShieldProjector>(I => string.Format("This comes to a final power draw of <color=purple>{0}</color> while idle which is 1/10 the advertised value of components. So, During passive regen, this is multiplied by {1} from idle to become {2}, and during active regen it's multiplied by {3} from idle to become {4}. Be sure your engine can handle it!",
+                (I.GetPowerUsed() + I.ShieldSizePower / I.ShieldCircleness) * DomeShieldConstants.IdleEPPMulti, //0
+                DomeShieldConstants.PassiveRegenEPPMulti / DomeShieldConstants.IdleEPPMulti, //1
+                ((I.GetPowerUsed() + I.ShieldSizePower / I.ShieldCircleness)) * DomeShieldConstants.PassiveRegenEPPMulti, //2
+                DomeShieldConstants.ActiveRegenEPPMulti / DomeShieldConstants.IdleEPPMulti, //3
+                ((I.GetPowerUsed() + I.ShieldSizePower / I.ShieldCircleness) * DomeShieldConstants.ActiveRegenEPPMulti))))); //4
             CreateSpace(0);
             standardSegment1.SpaceBelow = 40f;
             standardSegment1.SpaceAbove = 40f;
